@@ -36,17 +36,9 @@ public func InitUnityIntegrationWithOptions(
 /***********************************PLUGIN_ENTRY END**************************************/
 
 // Load unity framework for fisrt run
+// UnityFramework is statically linked into the host app, so there is no bundle to load at runtime.
 func UnityFrameworkLoad() -> UnityFramework? {
-    var bundlePath: String? = nil
-    bundlePath = Bundle.main.bundlePath
-    bundlePath = (bundlePath ?? "") + "/Frameworks/UnityFramework.framework"
-
-    let bundle = Bundle(path: bundlePath ?? "")
-    if bundle?.isLoaded == false {
-        bundle?.load()
-    }
-
-    return bundle?.principalClass?.getInstance()
+    return UnityFramework.getInstance()
 }
 
 /*********************************** GLOBAL FUNCS & VARS START**************************************/
@@ -87,7 +79,8 @@ var sharedApplication: UIApplication?
 
         self.ufw = UnityFrameworkLoad()
 
-        self.ufw?.setDataBundleId("com.unity3d.framework")
+        // Unity's Data folder is copied into the host app bundle, not into UnityFramework.framework.
+        self.ufw?.setDataBundleId(Bundle.main.bundleIdentifier!)
 
         registerUnityListener()
         self.ufw?.runEmbedded(withArgc: gArgc, argv: gArgv, appLaunchOpts: appLaunchOpts)
